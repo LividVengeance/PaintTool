@@ -61,15 +61,16 @@ LRESULT CALLBACK WindowProc(HWND _hwnd,
 	PAINTSTRUCT ps; // Used in WM_PAINT.
 	HDC hdc;        // Handle to a device context.
 	static ESHAPE s_currentShape = FREEHAND;
-	static int s_iMouseX = 0;
-	static int s_iMouseY = 0;
+	static int s_iMouseX;
+	static int s_iMouseY;
+	static bool s_bMouseDown = false;
 	
 	switch (_msg)
 	{
 	case WM_CREATE:
 	{
 		// Do initialization stuff here.
-		
+		g_pCanvas = new CCanvas();
 
 		// Return Success.
 		return (0);
@@ -79,7 +80,7 @@ LRESULT CALLBACK WindowProc(HWND _hwnd,
 	{
 		hdc = BeginPaint(_hwnd, &ps);
 		// You would do all your painting here...
-		if (g_pCanvas)
+		if (g_pCanvas != nullptr) //g_pCanvas != nullptr OR g_pcanvas
 		{
 			g_pCanvas->Draw(hdc);
 		}
@@ -99,7 +100,8 @@ LRESULT CALLBACK WindowProc(HWND _hwnd,
 		}
 		case ID_SHAPE_LINE:
 		{
-			//sdfdsfdsfdfsdsfdsfdsfdsfdsf
+			s_currentShape = LINESHAPE;
+			break;
 		}
 		case ID_HELP_ABOUT:
 		{
@@ -114,30 +116,62 @@ LRESULT CALLBACK WindowProc(HWND _hwnd,
 	break;
 	case WM_LBUTTONDOWN:
 	{
-		s_iMouseX = static_cast<int>(LOWORD(_lParam));
-		s_iMouseY = static_cast<int>(HIWORD(_lParam));
-
+		// get the position of the mouse
+		s_iMouseX = static_cast<int>(LOWORD(_lparam));
+		s_iMouseY = static_cast<int>(HIWORD(_lparam));
+		s_bMouseDown = true;
+		
 		switch (s_currentShape)
 		{
 		case LINESHAPE:
-		{
 			g_pShape = new CLine();
 			g_pShape->SetStartX(s_iMouseX);
 			g_pShape->SetStartY(s_iMouseY);
 			g_pCanvas->AddShape(g_pShape);
 			break;
-		}
-		default :
+		case RECTANGLESHAPE:
+			break;
+		case ELLIPSESHAPE:
+			break;
+		case POLYGONSHAPE:
+			break;
+		case STAMP:
+			break;
+		default:
 			break;
 		}
-		return(0);
+
+		return (0); // MUST HAVE RETURN  - I CAN HANDLE THIS CASE. DO NOT USE TO DEFAULT CASE.
 	}
-	break;
+	case WM_MOUSEMOVE:
+	{
+		// get the position of the mouse
+		s_iMouseX = static_cast<int>(LOWORD(_lparam));
+		s_iMouseY = static_cast<int>(HIWORD(_lparam));
+
+		if (s_bMouseDown == true)
+		{
+			if(g_pShape) // != nullptr
+			{
+				g_pShape->SetEndX(s_iMouseX);
+				g_pShape->SetEndY(s_iMouseY);
+				InvalidateRect(_hwnd, NULL, TRUE);
+				UpdateWindow(_hwnd);
+			}
+		}
+
+
+		return (0); // MUST HAVE RETURN  - I CAN HANDLE THIS CASE. DO NOT USE TO DEFAULT CASE.
+	}
+	
 	case WM_DESTROY:
 	{
+
+		delete g_pCanvas;
 		// Kill the application, this sends a WM_QUIT message.
 		PostQuitMessage(0);
 
+		
 		// Return success.
 		return (0);
 	}

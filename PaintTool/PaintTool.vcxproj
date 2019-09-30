@@ -151,7 +151,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="canvas.cpp" />
-    <ClCompile Include="line.cpp" />
+    <ClCompile Include="CLine.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="shape.cpp" />
   </ItemGroup>
